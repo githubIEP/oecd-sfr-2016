@@ -1,7 +1,7 @@
 # oecd-sfr-2016
 ##R Code for the OECD States of Fragility Report 2016 - Understanding Violence
 
-In order to run the OECD scripts [R](https://www.r-project.org/) and [R studio](https://www.rstudio.com/) need to be installed.
+In order to run the OECD scripts [R](https://www.r-project.org/), [R studio](https://www.rstudio.com/) and [RTools](https://cran.r-project.org/bin/windows/Rtools/) need to be installed.
 
 Steps to Run Script:
 
