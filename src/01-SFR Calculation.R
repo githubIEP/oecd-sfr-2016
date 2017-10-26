@@ -11,7 +11,7 @@ output_folders <- c("./data_out/", "./graphs")
 lapply(output_folders, function(x) file.remove(list.files(x, full.names = T)))
 options(stringsAsFactors = FALSE)
 options(useFancyQuotes = "UTF-8")
-reload.project(override.config = list(munging = T))
+reload.project(override.config = list(munging = F))
 cache("raw.data")
 set.seed(12345)
 source("./lib/funcs.R")
@@ -46,14 +46,14 @@ all.dimension.pca.metrics <- list()
 counter <- 3
 all.results <- sapply(sort(unique(raw.data$dimension)), function(i) {
     # take dimension subset of raw.data
-    temp <- raw.data %>% filter(dimension == i)
-    temp <- temp %>% select(iso3c, type, variablename, imputed)
+    temp <- raw.data %>% dplyr::filter(dimension == i)
+    temp <- temp %>% dplyr::select(iso3c, type, variablename, imputed)
     # rename for the bi-plots
     pos <- temp$type == "Coping"
     temp$variablename[pos] <- paste(temp$variablename[pos], " (C)", sep = "")
     temp$variablename[!pos] <- paste(temp$variablename[!pos], " (R)", sep = "")
     # create panel data
-    temp <- temp %>% select(-type) %>% distinct() %>% spread(variablename, imputed)
+    temp <- temp %>% dplyr::select(-type) %>% distinct() %>% spread(variablename, imputed)
     # drop highly correllated indicators
     drops <- findCorrelation(cor(temp[, -1]))
     if (length(drops) > 0 & drop.indicators.based.on.correlations) {
@@ -149,7 +149,7 @@ write.csv(cor, "./data_out/dimensional pca contributions.csv", row.names = F)
 # which clusters are fragile
 
 fragile.clusters <- sapply((names(all.results)), function(i) {
-    all.results[[i]] %>% filter(labels %in% fragile.clusters[[i]])
+    all.results[[i]] %>% dplyr::filter(labels %in% fragile.clusters[[i]])
 }, USE.NAMES = T, simplify = F)
 results <- bind_rows(fragile.clusters, .id = ".id")
 results <- as.data.frame.matrix(table(results$iso3c, results$.id))
@@ -164,17 +164,17 @@ results <- results %>% rename(value = total)
 results$value <- as.character(results$value)
 all.clusters <- bind_rows(all.results, .id = ".id")
 all.clusters$join.on <- paste(all.clusters$.id, all.clusters$labels)
-all.clusters <- all.clusters %>% select(-c(value, cut))
+all.clusters <- all.clusters %>% dplyr::select(-c(value, cut))
 # join clusters with fragility levels
 cluster.descriptions <- left_join(select(all.clusters, iso3c, join.on), fragile.levels)
 # generate output dimensions fragility levels
-fragility <- cluster.descriptions %>% select(iso3c, dimension, cluster, fragility) %>% distinct()
+fragility <- cluster.descriptions %>% dplyr::select(iso3c, dimension, cluster, fragility) %>% distinct()
 fragility$country <- oecd.country.name(fragility$iso3c, short = T)
 
 # create a raw data output file
-temp <- raw.data %>% select(country, dimension, type, variablename, imputed)
+temp <- raw.data %>% dplyr::select(country, dimension, type, variablename, imputed)
 temp$variablename <- paste("[", temp$dimension, "] [", temp$type, "] ", temp$variablename, sep = "")
-temp <- temp %>% distinct() %>% arrange(variablename) %>% select(-c(dimension, type)) %>% spread(variablename, 
+temp <- temp %>% distinct() %>% arrange(variablename) %>% dplyr::select(-c(dimension, type)) %>% spread(variablename, 
     imputed)
 
 temp[, -1] <- apply(temp[, -1], 2, scale)
