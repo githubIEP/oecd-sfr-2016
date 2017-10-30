@@ -4,9 +4,9 @@ filename <- "./data/sfr model data/gcri.csv"
 gcri <- read.csv(filename)
 gcri <- gcri[, -c(1:2)]
 gcri$average.gcri <- rowMeans(gcri[, 3:4])
-gcri <- gcri %>% rename(iso3c = COUNTRY, year = YEAR) %>% gather(variablename, value, -c(iso3c, year))
-indicators <- raw.data$log %>% filter(source == "GCRI")
-gcri <- gcri %>% filter(variablename %in% indicators$variablename)
+gcri <- gcri %>% dplyr::rename(iso3c = COUNTRY, year = YEAR) %>% gather(variablename, value, -c(iso3c, year))
+indicators <- raw.data$log %>% dplyr::filter(source == "GCRI")
+gcri <- gcri %>% dplyr::filter(variablename %in% indicators$variablename)
 gcri <- gcri[, c("iso3c", "variablename", "year", "value")]
 gcri$iso3c <- country.code.name(gcri$iso3c)
 oecd.countries <- read_excel("./data/additional data/OECD countries.xlsx")

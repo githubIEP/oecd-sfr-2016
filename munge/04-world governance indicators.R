@@ -15,16 +15,18 @@ wgi <- sapply(names(wgi), function(i) {
     names(x) <- x[1, ]
     x <- x[-1, ]
     x <- x[, !is.na(names(x))]
-    x <- x %>% rename(type = `Country/Territory`) %>% filter(type == "Estimate")
+    x <- x %>% dplyr::rename(type = `Country/Territory`) %>% dplyr::filter(type == "Estimate")
     x <- x %>% gather(country, value, -c(type, year))
-    x <- x %>% select(-type) %>% mutate(iso3c = country)
+    x$country <- gsub("KOREA, DEM\\. REP\\.", "North Korea", x$country)
+    x <- x %>% dplyr::select(-type) %>% mutate(iso3c = country)
     x <- x %>% mutate(variablename = i)
+    
     x <- x[, c("iso3c", "variablename", "year", "value")]
     x$year <- as.numeric(x$year)
     return(x)
 }, simplify = FALSE, USE.NAMES = TRUE)
 wgi <- bind_rows(wgi)
-indicators <- raw.data$log %>% filter(source == "WGI")
-wgi <- wgi %>% filter(variablename %in% indicators$variablename)
+indicators <- raw.data$log %>% dplyr::filter(source == "WGI")
+wgi <- wgi %>% dplyr::filter(variablename %in% indicators$variablename)
 raw.data$wgi <- wgi
 rmExcept("raw.data") 

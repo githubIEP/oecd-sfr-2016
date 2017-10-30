@@ -5,10 +5,10 @@ gti <- read_excel(filename)
 names(gti)[-1] <- gti[1, -1]
 gti <- gti[-1, ]
 gti <- gti[, 1:14]
-gti <- gti %>% select(Country, `2014`)
+gti <- gti %>% dplyr::select(Country, `2014`)
 names(gti) <- c("iso3c", "value")
 gti$year <- 2014
-indicators <- raw.data$log %>% filter(source == "IEP/START")
+indicators <- raw.data$log %>% dplyr::filter(source == "IEP/START")
 gti$variablename <- indicators$variablename
 gti <- gti[, c("iso3c", "variablename", "year", "value")]
 gti$iso3c <- country.code.name(gti$iso3c)

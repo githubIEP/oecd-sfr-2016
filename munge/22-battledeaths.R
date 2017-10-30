@@ -17,13 +17,13 @@ if (sum(ucdp$CountryCount) > 0) {
         Conflictsub <- rbind(Conflictsub, Splits)
     }
 }
-ucdp <- Conflictsub[, c("LocationInc", "Year", "BdBest")] %>% filter(Year == max(Year))
+ucdp <- Conflictsub[, c("LocationInc", "Year", "BdBest")] %>% dplyr::filter(Year == max(Year))
 # aggregate by country
 ucdp <- ucdp %>% group_by(LocationInc) %>% summarise(value = sum(BdBest, na.rm = T))
 # column names
 ucdp <- as.data.frame(ucdp)
 names(ucdp) <- tolower(names(ucdp))
-ucdp <- ucdp %>% rename(location = locationinc)
+ucdp <- ucdp %>% dplyr::rename(location = locationinc)
 ucdp$location <- gsub("Yemen \\(North Yemen\\)", "Yemen", ucdp$location)
 ucdp$iso3c <- country.code.name(ucdp$location)
 # sum up deaths in the past 3 years
@@ -34,7 +34,7 @@ ucdp <- per.capita.calc(ucdp)
 ucdp$value <- log(ucdp$value + 1)
 # ucdp$value[ucdp$iso3c == 'SYR'] = rev(sort(ucdp$value))[2] syria = ucdp$iso3c == 'SYR'
 # ucdp$value[syria] = 1.2 * sort(ucdp$value, decreasing = T)[2] get variablename
-indicators <- raw.data$log %>% filter(source == "UCDP-BD")
+indicators <- raw.data$log %>% dplyr::filter(source == "UCDP-BD")
 ucdp$variablename <- indicators$variablename
 ucdp <- ucdp[, c("iso3c", "variablename", "year", "value")]
 #### add zeros for missing values
@@ -46,7 +46,7 @@ raw.data$bd <- ucdp
 years.of.peace <- Conflictsub %>% group_by(LocationInc) %>% summarise(last.yr = max(Year))
 years.of.peace$LocationInc <- gsub("Yemen \\(North Yemen\\)", "Yemen", years.of.peace$LocationInc)
 years.of.peace$iso3c <- country.code.name(country.code.name(as.character(years.of.peace$LocationInc)))
-years.of.peace <- years.of.peace %>% select(-LocationInc) %>% group_by(iso3c) %>% summarise(last.yr = max(last.yr))
+years.of.peace <- years.of.peace %>% dplyr::select(-LocationInc) %>% group_by(iso3c) %>% summarise(last.yr = max(last.yr))
 ucdp <- left_join(ucdp, years.of.peace)
 ucdp$value <- ucdp$year - ucdp$last.yr
 ucdp$value[is.na(ucdp$value)] <- max(ucdp$year) - 1945

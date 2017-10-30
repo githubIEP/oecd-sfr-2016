@@ -5,12 +5,12 @@ vdem <- read.csv(filename)
 
 # drop older years, removes old countries Yemen's People Republic, USSR, Republic of Vietnam, Serbia
 # and Montenegro.
-vdem <- vdem %>% filter(year > 2000)
+vdem <- vdem %>% dplyr::filter(year > 2000)
 vdem$iso3c <- gsub("Congo_Democratic Republic of", "Democratic Republic Congo", vdem$iso3c)
 vdem$iso3c <- gsub("Vietnam_Democratic Republic of", "Vietnam", vdem$iso3c)
 vdem$iso3c <- gsub("Congo_Republic of the", "Democratic Republic Congo", vdem$iso3c)
-vdem$iso3c <- gsub("Korea_North", "Korea North", vdem$iso3c)
-vdem$iso3c <- gsub("Korea_South", "Korea South", vdem$iso3c)
+vdem$iso3c <- gsub("Korea_North", "North Korea", vdem$iso3c)
+vdem$iso3c <- gsub("Korea_South", "South Korea", vdem$iso3c)
 vdem$iso3c <- gsub("Burma_Myanmar", "Burma Myanmar", vdem$iso3c)
 pos <- grep("Palestine", vdem$iso3c)
 vdem$iso3c[pos] <- "Palestine"
