@@ -17,7 +17,7 @@ if (sum(ucdp$CountryCount) > 0) {
     }
 }
 
-ucdp <- Conflictsub[, c("location", "year", "bestfatalityestimate")] %>% filter(year == max(year))
+ucdp <- Conflictsub[, c("location", "year", "bestfatalityestimate")] %>% dplyr::filter(year == max(year))
 # aggregate by country
 ucdp <- ucdp %>% group_by(location) %>% summarise(value = sum(bestfatalityestimate, na.rm = T))
 
@@ -31,7 +31,7 @@ ucdp$iso3c <- country.code.name(ucdp$location)
 ucdp <- per.capita.calc(ucdp)
 # ucdp$value = log(ucdp$value+1) ucdp$value[ucdp$iso3c == 'SYR'] = rev(sort(ucdp$value))[2] get
 # variablename
-indicators <- raw.data$log %>% filter(source == "UCDP-NS")
+indicators <- raw.data$log %>% dplyr::filter(source == "UCDP-NS")
 ucdp$variablename <- indicators$variablename
 ucdp <- ucdp[, c("iso3c", "variablename", "year", "value")]
 #### add zeros for missing values

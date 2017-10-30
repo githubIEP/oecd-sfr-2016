@@ -9,8 +9,8 @@ source("./lib/funcs.R")
 
 # combine all principal components
 all.prcomps <- bind_rows(all.results, .id = "dimension")
-all.prcomps <- all.prcomps %>% select(-c(cut, labels, value)) %>% gather(variablename, value, -c(dimension, 
-    iso3c)) %>% mutate(variablename = paste(dimension, variablename), value = value) %>% select(-dimension) %>% 
+all.prcomps <- all.prcomps %>% dplyr::select(-c(cut, labels, value)) %>% gather(variablename, value, -c(dimension, 
+    iso3c)) %>% mutate(variablename = paste(dimension, variablename), value = value) %>% dplyr::select(-dimension) %>% 
     spread(variablename, value)  #if I ever want to rename arrow labels do it here
 # set the number of clusters to group
 num.clusters <- 10
@@ -31,7 +31,7 @@ centroids$rank <- rank(centroids$PC1)
 centroids$labels <- LETTERS[centroids$rank]
 aggr.pca$cut <- LETTERS[clusters.cut]
 aggr.pca <- left_join(aggr.pca, select(centroids, cut, labels))
-aggr.pca <- aggr.pca %>% select(-cut)
+aggr.pca <- aggr.pca %>% dplyr::select(-cut)
 # create bi-plot
 fragile.clust <- c("A", "B", "C", "D", "E", "F", "G", "H", "I")
 p <- ggbiplot.sfr(pca, obs.scale = 1, var.scale = 1, ellipse = F, circle = F, labels = aggr.pca$iso3c, 
@@ -69,7 +69,7 @@ ggsave(p, filename = paste("./graphs/Fig A8 aggregate PCA.pdf", sep = ""), heigh
 ################### Step 2 ######################################### Do a pca of the dimension principal components
 
 aggr.pca <- data.frame(all.prcomps, pca$x[, 1])
-aggr.pca <- aggr.pca %>% rename(fragility = pca.x...1.) %>% select(-contains("PC1"))
+aggr.pca <- aggr.pca %>% rename(fragility = pca.x...1.) %>% dplyr::select(-contains("PC1"))
 aggr.pca <- aggr.pca %>% arrange((fragility))
 aggr.pca$fragility.level <- "Rest of the World"
 pos <- as.numeric(rownames(aggr.pca)) < nrow(aggr.pca)/3  #Take top third
@@ -77,7 +77,7 @@ aggr.pca$fragility.level[pos] <- "Fragile"
 pos <- aggr.pca$fragility <= -2.5
 aggr.pca$fragility.level[pos] <- "Extreme Fragility"
 write.csv(aggr.pca, "./data_out/two-tier PCA - PC1 as Fragility Score.csv", row.names = F)
-final <- aggr.pca %>% select(iso3c, fragility.level) %>% filter(fragility.level != "Rest of the World")
+final <- aggr.pca %>% dplyr::select(iso3c, fragility.level) %>% dplyr::filter(fragility.level != "Rest of the World")
 two.lists <- data.frame(all.prcomps$iso3c, pca$x[, 1:2])
 two.lists <- two.lists %>% arrange((PC1))
 two.lists$fragility.level <- "Rest of the World"
@@ -85,7 +85,7 @@ pos <- as.numeric(rownames(two.lists)) < nrow(two.lists)/3  #Take top third
 two.lists$fragility.level[pos] <- "Fragile"
 pos <- two.lists$PC1 <= -2.5
 two.lists$fragility.level[pos] <- "Extreme Fragility"
-two.lists <- two.lists %>% filter(fragility.level != "Rest of the World")
+two.lists <- two.lists %>% dplyr::filter(fragility.level != "Rest of the World")
 two.lists$above <- findInterval(two.lists$PC2, c(-10, -0.5, 0.5, 10))
 two.lists$country <- oecd.country.name(two.lists$all.prcomps.iso3c, short = T)
 two.lists <- split(two.lists, factor(two.lists$above))
@@ -93,7 +93,7 @@ two.lists <- split(two.lists, factor(two.lists$above))
 ################### Step 8 ######################################### Pie Chart
 
 temp <- left_join(final, select(fragility, iso3c, country, fragility, dimension))
-temp <- temp %>% select(country, dimension, fragility.level, fragility)
+temp <- temp %>% dplyr::select(country, dimension, fragility.level, fragility)
 angles <- -90 - 270/length(unique(temp$country)) * seq_along(temp$country)
 angles <- angles%%360
 pos <- angles > 90
@@ -103,11 +103,11 @@ temp$dimension <- factor(temp$dimension, levels = rev(c("Political", "Societal",
 ybreaks <- levels(temp$dimension)
 temp$col <- brewer.pal(9, "Blues")[9]
 temp$col[temp$fragility.level == "Fragile"] <- brewer.pal(9, "Blues")[6]
-col <- temp %>% select(country, col) %>% distinct()
-security.cluster <- fragility %>% filter(dimension == "Security") %>% select(country, cluster)
+col <- temp %>% dplyr::select(country, col) %>% distinct()
+security.cluster <- fragility %>% dplyr::filter(dimension == "Security") %>% dplyr::select(country, cluster)
 temp <- left_join(temp, security.cluster)
 temp$asterisk <- ""
-battledeaths <- raw.data %>% filter(variablename == "Battle Related Deaths Per Capita (log)", value > 
+battledeaths <- raw.data %>% dplyr::filter(variablename == "Battle Related Deaths Per Capita (log)", value > 
     0)
 pos <- country.code.name(temp$country) %in% battledeaths$iso3c
 temp$country <- factor(temp$country, levels = unique(temp$country), ordered = T)

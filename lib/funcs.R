@@ -7,15 +7,15 @@ add.zeros.for.missing.values = function(x, raw.data, replace.with = 0)
   temp = setdiff(temp, x$iso3c)
   temp = data.frame(iso3c = temp, variablename = x$variablename[1], 
                     year = max(as.numeric(as.character(x$year))), value = replace.with)
-  temp = temp %>% filter(complete.cases(.))
+  temp = temp %>% dplyr::filter(complete.cases(.))
   x = bind_rows(x, temp)
   x
 }
 
 most.recent = function(df)
 {
-  df = df %>% filter(complete.cases(value))
-  df %>% group_by(iso3c, variablename) %>% filter(year == max(year)) %>% ungroup()
+  df = df %>% dplyr::filter(complete.cases(value))
+  df %>% group_by(iso3c, variablename) %>% dplyr::filter(year == max(year)) %>% ungroup()
 }
 
 pca.transform = function(raw.data, method = "pca")
@@ -25,7 +25,7 @@ pca.transform = function(raw.data, method = "pca")
   ##################
   require(caret)
   #Select the relevant columns
-  x = raw.data %>% select(dimension, type, iso3c, variablename, imputed) %>% distinct() 
+  x = raw.data %>% dplyr::select(dimension, type, iso3c, variablename, imputed) %>% distinct() 
   #Create a list of the data by dimension-type couplet
   temp = split(x, factor(x$dimension))
   temp = lapply(temp, function(x) split(x, factor(x$type)))
@@ -44,9 +44,9 @@ pca.transform = function(raw.data, method = "pca")
         mutate(score = (imputed-min(imputed))/diff(range(imputed))) %>% ungroup()
       direction = direction %>% group_by(iso3c) %>% summarise(av = mean(score), worst.case = max(score))
       #select relevant columns for PCA
-      x = x %>% select(-c(dimension, type)) %>% spread(variablename, imputed) 
+      x = x %>% dplyr::select(-c(dimension, type)) %>% spread(variablename, imputed) 
       rownames(x) = x$iso3c
-      x = x %>% select(-iso3c)
+      x = x %>% dplyr::select(-iso3c)
       #perform PCA
       if (ncol(x) > 1) #some dimension-type couplet only have 1 indicator which throws up an error in the PCA
       {
@@ -120,13 +120,13 @@ impute = function(raw.data)
   require(caret)
 
   #Select relevant columns and distinct rows dues to indicator double ups
-  x = raw.data %>% select(iso3c, variablename,  value) %>% distinct() 
+  x = raw.data %>% dplyr::select(iso3c, variablename,  value) %>% distinct() 
   #create a uid dataframe
   ids = data.frame(variablename = unique(x$variablename), uid = paste("a", 1:length(unique(x$variablename)), sep=""))
-  ismorebetter = raw.data %>% select(variablename, doesmoreincreasefragility) %>% distinct(.)
+  ismorebetter = raw.data %>% dplyr::select(variablename, doesmoreincreasefragility) %>% distinct(.)
   #combine ids with x
   x = left_join(x, ids)
-  x = x %>% select(-variablename) %>% spread(uid, value)  
+  x = x %>% dplyr::select(-variablename) %>% spread(uid, value)  
   #perform knn imputation
   preObj = preProcess(x[,-1], method = "knnImpute", k=15)
   #rescale back to original measurement scale
@@ -143,19 +143,19 @@ impute = function(raw.data)
   tmp = distinct(select(raw.data, dimension, type, variablename))
   temp = left_join(temp, tmp)
   temp = left_join(temp, raw.data)
-  temp = temp %>% select(-uid)
+  temp = temp %>% dplyr::select(-uid)
   temp = temp %>% group_by(variablename) %>% mutate(max.year = max(year, na.rm=T)) %>% ungroup()
   pos = is.na(temp$year)
   temp$year[pos] = temp$max.year[pos]
   temp$country = country.code.name(temp$iso3c)
-  temp = temp %>% select(-max.year)
+  temp = temp %>% dplyr::select(-max.year)
   ###test each country has a data point
   availability = as.data.frame(table(temp$iso3c, temp$variablename))
   availability = availability %>% group_by(Var1) %>% summarise(n = n(), missing = sum(Freq==0)/n())
   expect_that(max(availability$n), equals(length(unique(temp$variablename))))
   expect_that(min(availability$n), equals(length(unique(temp$variablename))))
   expect_that(max(availability$missing), equals(0))
-  tmp = temp %>% select(iso3c, variablename, imputed) %>% distinct() %>% spread(variablename, imputed)
+  tmp = temp %>% dplyr::select(iso3c, variablename, imputed) %>% distinct() %>% spread(variablename, imputed)
   expect_that(sum(is.na(tmp)), equals(0))
   
   return(temp)
@@ -231,7 +231,7 @@ per.capita.calc = function(x)
 {
   x = merge(x, read.csv("./data/population data/world_pop_2015.csv"), all.x=T)
   x$value = 100000*x$value/x$pop2015
-  x = x %>% select(-pop2015)
+  x = x %>% dplyr::select(-pop2015)
 }
 
 ggbiplot.sfr = function (pcobj, choices = 1:2, scale = 1, pc.biplot = TRUE, 
